@@ -20,8 +20,25 @@ import smtplib
 from email.message import EmailMessage
 
 model = load_model('my_model')
+receiver = 'lci2021023@iiitl.ac.in'
 
+def email_alert(to):
+    msg = EmailMessage()
+    msg.set_content('I just fell down! I might be unconscious. \nVisit me at my house and please call an ambulance'
+)
+    msg['subject'] = 'Howdy mate!'
+    msg['to'] = to
 
+    user = ''
+    msg['from'] = user
+    password = ''
+
+    server = smtplib.SMTP('smtp.gmail.com', 587)
+    server.starttls()
+    server.login(user, password)
+    server.send_message(msg)
+    server.quit()
+    st.write("Email sent successfully to " , receiver)
 
 # Function to make predictions
 def predict_image(img):
@@ -35,8 +52,6 @@ def predict_image(img):
 
 # Streamlit UI
 st.title("Fall Detection Software")
-
-receiver = 'lci2021023@iiitl.ac.in'
 
 def get_cap(device_num):
     cap = cv2.VideoCapture(device_num)

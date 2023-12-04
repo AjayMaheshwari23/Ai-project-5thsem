@@ -1,5 +1,8 @@
 /CNN/Other_dataset
 /CNN/Data
 
+.gitignore
+
+.DS_Store
+
 .env
-env
