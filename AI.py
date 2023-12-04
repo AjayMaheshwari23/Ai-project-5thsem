@@ -4,9 +4,8 @@ from email.message import EmailMessage
 
 def email_alert(to):
     msg = EmailMessage()
-    msg.set_content('I fell! Nothing serious, just might be unconsious... \nVisit me at my room if possible and call an ambulance if you are free. \n\nP.S. I might be dead till you get here...'
-)
-    msg['subject'] = 'Howdy mate!'
+    msg.set_content('I just fell down! I might be unconscious. \nVisit me at my house and please call an ambulance if you are free.')
+    msg['subject'] = 'Emergency Alert by Mr. X!'
     msg['to'] = to
 
     user = ''
