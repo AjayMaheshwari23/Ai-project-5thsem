@@ -15,21 +15,24 @@ from tensorflow.keras.models import load_model
 
 import smtplib
 from email.message import EmailMessage
+from dotenv import load_dotenv
+import os
+load_dotenv()
 
 model = load_model('my_model')
 
 receiver = 'lci2021023@iiitl.ac.in'
 
 def email_alert(to):
+    user = os.getenv("sender_email")
+    password = os.getenv("sender_password")
     msg = EmailMessage()
     msg.set_content('I just fell down! I might be unconscious. \nVisit me at my house and please call an ambulance'
 )
     msg['subject'] = 'Howdy mate!'
     msg['to'] = to
 
-    user = ''
     msg['from'] = user
-    password = ''
 
     server = smtplib.SMTP('smtp.gmail.com', 587)
     server.starttls()
@@ -91,7 +94,7 @@ def save_frame(device_num, cycle):
                 placeholder_text.text("Mail Sending...")
                 email_alert(receiver)
                 placeholder_text.text("Mail Sent")
-                # break
+                break
 
         elif(updated_text):
             prev=1
