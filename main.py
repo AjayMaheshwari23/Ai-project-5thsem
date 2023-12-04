@@ -1,4 +1,5 @@
 import os
+import io
 import cv2
 import time
 import pickle
@@ -6,96 +7,63 @@ import tempfile
 import datetime
 import numpy as np
 import pandas as pd
+from PIL import Image
 import streamlit as st
 import tensorflow as tf
+
 import matplotlib.pyplot as plt
 from tensorflow.keras import Input, Model
 from tensorflow.keras.layers import Dense, Conv2D, MaxPooling2D, Flatten, ReLU
+from tensorflow.keras.models import load_model
 
-# Load your trained model from a pickle file
-with open('model.pkl', 'rb') as model_file:
-    model = pickle.load(model_file)
+import smtplib
+from email.message import EmailMessage
+
+model = load_model('my_model')
+
+
 
 # Function to make predictions
 def predict_image(img):
     prediction = 5436
-    resized_img = cv2.resize(img, (1080,720) )
+    resized_img = cv2.resize(img, (100,100) )
     cur_pred = []
     cur_pred.append(resized_img)
     cur_pred = np.array(cur_pred)
-
-    print(cur_pred.shape)
     predicted_labels = ( model.predict(cur_pred) >= 0.5).astype('int64')
-
-    #predicted_labels.shape
-    print(predicted_labels)
-    print(resized_img.shape)
     return predicted_labels[0]
 
 # Streamlit UI
-st.title("Image Prediction App")
-# File Upload Widget
-uploaded_file = st.file_uploader("Choose an image...", type="jpg")
+st.title("Fall Detection Software")
 
-if uploaded_file is not None:
-    #Read the uploaded image
-    temp_file = tempfile.NamedTemporaryFile(delete=False)
-    temp_file.write(uploaded_file.read())
-    temp_file_path = temp_file.name
-    temp_file.close()
-
-    # Use OpenCV to read the image
-    img = cv2.imread(temp_file_path)
-    prediction = predict_image(img)
-
-    # # Display prediction
-    # st.write("Model Prediction:")
-    # st.write(prediction)
-
-
+receiver = 'lci2021023@iiitl.ac.in'
 
 def get_cap(device_num):
     cap = cv2.VideoCapture(device_num)
     return cap
 
-def save_frame(device_num, cycle):
-    cap = get_cap(device_num)
-
-    if not cap.isOpened():
-        st.error("Error: Unable to open the webcam.")
-        return
-
-    n = 0
-    placeholder = st.empty()  # Create an empty placeholder
+def status(val):
+    if(val):
+        return "FALLEN EMERGENCY ALERT !!"
+    else:
+        return "Everything Normal"
 
 
-    st.title('Dynamic Placeholder Text')
+
+st.title("Upload your image to be checked")
+uploaded_file = st.file_uploader("Upload an image", type=["png", "jpg", "jpeg"])
+if uploaded_file is not None:
     placeholder_text = st.empty()
+    placeholder_text.text("Status Processing...")
+    file_bytes = uploaded_file.getvalue()
+    bin_stream = io.BytesIO(file_bytes)
+    image = cv2.imdecode(np.frombuffer(bin_stream.read(), np.uint8), 1)
+    res = predict_image(image)
+    print(res)
+    placeholder_text.write(status(res))  # Update the placeholder text using write()
+    if res:
+        email_alert(receiver)
 
-    while n <= cycle:
-        ret, frame = cap.read()
 
-        if not ret:
-            st.error("Error: Failed to capture frame.")
-            break
-
-        # Convert BGR to RGB
-        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-
-        # Display the frame in Streamlit
-        placeholder.image(rgb_frame, channels="RGB", use_column_width=True, caption=f"Frame {n}")
-
-        updated_text =  predict_image(frame)
-        placeholder_text.text(updated_text)
-
-        # Update every second
-        time.sleep(1)
-
-        n += 1
-
-    # Release the webcam
-    cap.release()
-
-# Streamlit app
-st.title("Webcam Stream in Streamlit")
-save_frame(0, 60)
+placeholder_text2 = st.empty()
+placeholder_text2.text("")
