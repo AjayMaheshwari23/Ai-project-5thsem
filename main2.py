@@ -21,15 +21,18 @@ load_dotenv()
 
 model = load_model('my_model')
 
-receiver = 'lci2021023@iiitl.ac.in'
-
+receiver = os.getenv("receiver")
+text_input = st.text_input("Enter Email Address")
+if text_input:
+    receiver = text_input
+    
 def email_alert(to):
     user = os.getenv("sender_email")
     password = os.getenv("sender_password")
     msg = EmailMessage()
     msg.set_content('I just fell down! I might be unconscious. \nVisit me at my house and please call an ambulance'
 )
-    msg['subject'] = 'Howdy mate!'
+    msg['subject'] = 'Emergency Alert!'
     msg['to'] = to
 
     msg['from'] = user
